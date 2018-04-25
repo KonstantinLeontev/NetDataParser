@@ -1,6 +1,3 @@
-// Size of the packet headers.
-#define NETV1_HEADER 14
-
 // All structs describes the given net levels.
 
 struct Network_V1 {
