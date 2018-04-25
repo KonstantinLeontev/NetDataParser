@@ -1,3 +1,6 @@
+// Size of the packet headers.
+#define NETV1_HEADER 14
+
 // All structs describes the given net levels.
 
 struct Network_V1 {
@@ -22,7 +25,7 @@ struct Network_V2 {
 
 struct Transport_V1 {
 	char sourcePort[2];
-	char destinPort[2];
+	char destPort[2];
 	char dataSize[2];
 	// Data - 6-N.
 	// Checksum - N + 1, N + 2.
@@ -30,7 +33,7 @@ struct Transport_V1 {
 
 struct Transport_V2 {
 	char sourcePort[2];
-	char destinPort[2];
+	char destPort[2];
 	char fragmentNumber[4];
 	char lf; // Last 2 bits: F - first packet in the session, L - last packet in the session.
 	char dataSize[2];
