@@ -1,5 +1,8 @@
-// All structs describes the given net levels.
+// Header sizes with checksum. 
+#define TRANSPV1_HEADER 8
+#define TRANSPV2_HEADER 13
 
+// All structs describes the given net levels.
 struct Network_V1 {
 	// Version 1 byte.
 	char sourceAddress[4];

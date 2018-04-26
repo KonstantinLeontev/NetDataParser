@@ -116,10 +116,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="NetDataParser.cpp" />
+    <ClCompile Include="ReadDataClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetDataStatClass.h" />
     <ClInclude Include="NetLevels.h" />
+    <ClInclude Include="ReadDataClass.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
