@@ -5,7 +5,7 @@
 
 class ReadDataClass {
 public:
-	ReadDataClass() : m_netVersion{}, m_protocol{}, m_pos{}, m_fileSize{}, m_dataSize{}, m_checkSum{},
+	ReadDataClass() : m_netVersion{}, m_protocol{}, m_pos{}, m_fileSize{}, m_dataSize{}, m_checkSum{}, m_fragNum{},
 		m_netV1(), m_netV2(), m_transpV1(), m_transpV2() {}
 
 	void ReadNetV1(std::ifstream &dataFile){ dataFile.read((char*)&m_netV1, sizeof(Network_V1)); }
@@ -41,4 +41,5 @@ private:
 	unsigned m_fileSize;
 	unsigned m_dataSize; // A size of the data in the packet.
 	unsigned m_checkSum;
+	unsigned long m_fragNum;
 };

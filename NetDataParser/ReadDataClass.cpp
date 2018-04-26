@@ -46,6 +46,22 @@ void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> 
 
 	// Check for wrong sum.
 	CheckWrongSum(dataFile, stat, TRANSPV2_HEADER, TRANSPV2_W);
+
+	// Set the fragment number.
+	stat.BigEndConverter(4, m_transpV2.fragmentNumber, 0, &m_fragNum, 0);
+	// Checking for packet flag.
+	unsigned bit1 = (m_transpV2.lf >> 1) & 1U;
+	unsigned bit0 = (m_transpV2.lf >> 0) & 1U;
+	// Add this numbers to the stat databse.
+	if (bit1) {
+		stat.SetFragments(m_fragNum, 'L');
+	}
+	else if (bit0) {
+		stat.SetFragments(m_fragNum, 'F');
+	}
+	else {
+		stat.SetFragments(m_fragNum, '-');
+	}
 }
 
 void ReadDataClass::SetProtocol() {

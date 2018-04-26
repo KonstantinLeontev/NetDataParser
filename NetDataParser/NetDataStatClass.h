@@ -2,14 +2,15 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include <map>
 
 enum DATA { NETV1_P, NETV2_P, NETV1_A, NETV2_A, TRANSPV1_PACK, TRANSPV2_PACK, TRANSPV1_W, TRANSPV2_W, TRANSPV1_PORT, TRANSPV2_PORT, TRANSPV2_S };
 
 template <typename T>
 class NetDataStat {
 public:
-	NetDataStat() : m_dataSet{}, m_fileName(""), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2() {}
-	NetDataStat(const std::string &name) : m_dataSet{}, m_fileName(name), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2() {}
+	NetDataStat() : m_dataSet{}, m_fileName(""), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), fragments() {}
+	NetDataStat(const std::string &name) : m_dataSet{}, m_fileName(name), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), fragments() {}
 	NetDataStat(const NetDataStat &other) {}
 	~NetDataStat() {}
 
@@ -23,6 +24,8 @@ public:
 	void SetAddressNetV2(const char* adr);
 	void SetPortTranspV1(const char* p);
 	void SetPortTranspV2(const char* p);
+
+	void SetFragments(const unsigned long &num, const char &flag) { fragments.emplace(num, flag); }
 
 	// Convert bytes to unsigned, unsigned long and unsigned long long by choice.
 	void BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum);
@@ -45,6 +48,9 @@ private:
 	std::set<unsigned long long> m_addressNet_V2;
 	std::set<unsigned> m_portTransp_V1;
 	std::set<unsigned> m_portTransp_V2;
+
+	// Fragments numbers.
+	std::map<unsigned long, char> fragments;
 };
 
 template <typename T>
@@ -114,5 +120,9 @@ void NetDataStat<T>::PrintToScreen() const {
 	}
 	std::cout << m_dataSet[i] << '\n';
 	}
+	/*std::cout << "\nFragments:\n";
+	for (auto& x : fragments) {
+		std::cout << "Number: " << x.first << ", flag: " << x.second << '\n';
+	}*/
 	std::cout << '\n';
 }
