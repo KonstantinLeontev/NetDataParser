@@ -1,31 +1,36 @@
 #include "ReadDataClass.h"
 
+void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const int &headerSize, const DATA value) {
+	// Jump to the checksum field and read the checksum.
+	m_pos = dataFile.tellg();
+	m_pos += m_dataSize;
+	dataFile.seekg(m_pos);
+	// Read the checksum
+	dataFile.read((char*)&m_checkSumBuf, sizeof(char[2]));
+	// Set checksum member of the class.
+	stat.BigEndConverter(2, m_checkSumBuf, &m_checkSum, 0, 0);
+
+	// Check the size of the whole packet and checksum.
+	unsigned tempSum = (headerSize + m_dataSize) % 0xFFFF;
+	if (m_checkSum != tempSum) {
+		// **TASK 7: CheckSum is wrong - increase corresponding field in the stat array.
+		stat.IncreaseDataCnt(value);
+	}
+}
+
 void ReadDataClass::ReadTranspV1(std::ifstream &dataFile, NetDataStat<unsigned> &stat) {
 	dataFile.read((char*)&m_transpV1, sizeof(Transport_V1));
 	// **TASK 5: Increase the counter for TRANSPORT V1 packets.
 	stat.IncreaseDataCnt(TRANSPV1_PACK);
 	// **TASK 9: Add the ports to the set.
 	stat.SetPortTranspV1(m_transpV1.sourcePort);
-	stat.SetPortTranspV2(m_transpV1.destPort);
+	stat.SetPortTranspV1(m_transpV1.destPort);
 
 	// Get the size of the data in the packet.
-	m_dataSize = (m_transpV1.dataSize[0] << 8) | m_transpV1.dataSize[1];
+	stat.BigEndConverter(2, m_transpV1.dataSize, &m_dataSize, 0, 0);
 
-	// Jump to the checksum field and read the checksum.
-	m_pos = dataFile.tellg();
-	m_pos += m_dataSize;
-	// Read the checksum
-	//unsigned checkSum = dataFile.read();
-
-	// Check the size of the whole packet and checksum.
-	//unsigned headerChecksum = (transpV1.headerChecksum[0] << 8 | )
-
-
-	// Get the new pos at the next packet beginning.
-	m_pos = dataFile.tellg();
-	m_pos += m_dataSize + 2;
-	// Set stream pointer to the new pos.
-	dataFile.seekg(m_pos);
+	// Check for wrong sum.
+	CheckWrongSum(dataFile, stat, TRANSPV1_HEADER, TRANSPV1_W);
 }
 
 void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> &stat) {
@@ -36,13 +41,11 @@ void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> 
 	stat.SetPortTranspV2(m_transpV2.sourcePort);
 	stat.SetPortTranspV2(m_transpV2.destPort);
 
-	// Jump pos to the end of the packet to read next one.
-	m_dataSize = (m_transpV2.dataSize[0] << 8) | m_transpV2.dataSize[1];
-	// Get the new pos at the next packet beginning.
-	m_pos = dataFile.tellg();
-	m_pos += m_dataSize + 2;
-	// Set stream pointer to the new pos.
-	dataFile.seekg(m_pos);
+	// Get the size of the data in the packet.
+	stat.BigEndConverter(2, m_transpV2.dataSize, &m_dataSize, 0, 0);
+
+	// Check for wrong sum.
+	CheckWrongSum(dataFile, stat, TRANSPV2_HEADER, TRANSPV2_W);
 }
 
 void ReadDataClass::SetProtocol() {

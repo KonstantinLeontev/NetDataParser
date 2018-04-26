@@ -22,6 +22,9 @@ public:
 	char GetProtocol() const { return m_protocol; }
 	unsigned GetPos() const { return m_pos; }
 	unsigned GetFileSize() const { return m_fileSize; }
+	unsigned GetCheckSum() const { return m_checkSum; }
+
+	void CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const int &headerSize, const DATA value);
 
 	// Buffers for reading headers from file.
 	Network_V1 m_netV1;

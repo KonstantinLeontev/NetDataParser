@@ -24,6 +24,9 @@ public:
 	void SetPortTranspV1(const char* p);
 	void SetPortTranspV2(const char* p);
 
+	// Convert bytes to unsigned, unsigned long and unsigned long long by choice.
+	void BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum);
+
 	// Get the number of unique elements.
 	T GetAddressNetV1Quant() const { return m_addressNet_V1.size(); }
 	T GetAddressNetV2Quant() const { return m_addressNet_V2.size(); }
@@ -46,7 +49,8 @@ private:
 
 template <typename T>
 void NetDataStat<T>::SetAddressNetV1(const char* adr) {
-	unsigned long address = (adr[0] << 24) | (adr[1] << 16) | (adr[2] << 8) | adr[3];
+	unsigned long address{};
+	BigEndConverter(4, adr, 0, &address, 0);
 	if (m_addressNet_V1.insert(address).second) {
 		IncreaseDataCnt(NETV1_A);
 	}
@@ -54,7 +58,8 @@ void NetDataStat<T>::SetAddressNetV1(const char* adr) {
 
 template <typename T>
 void NetDataStat<T>::SetAddressNetV2(const char* adr) {
-	unsigned long long address = (adr[0] << 40) | (adr[1] << 32) | (adr[2] << 24) | (adr[3] << 16) | (adr[4] << 8) | adr[5];
+	unsigned long long address{};
+	BigEndConverter(6, adr, 0, 0, &address);
 	if (m_addressNet_V2.insert(address).second) {
 		IncreaseDataCnt(NETV2_A);
 	}
@@ -62,7 +67,8 @@ void NetDataStat<T>::SetAddressNetV2(const char* adr) {
 
 template <typename T>
 void NetDataStat<T>::SetPortTranspV1(const char* p) {
-	unsigned port = (p[0] << 8) | p[1];
+	unsigned port{};
+	BigEndConverter(2, p, &port, 0, 0);
 	if (m_portTransp_V1.insert(port).second) {
 		IncreaseDataCnt(TRANSPV1_PORT);
 	}
@@ -70,9 +76,20 @@ void NetDataStat<T>::SetPortTranspV1(const char* p) {
 
 template <typename T>
 void NetDataStat<T>::SetPortTranspV2(const char* p) {
-	unsigned port = (p[0] << 8) | p[1];
+	unsigned port;
+	BigEndConverter(2, p, &port, 0, 0);
 	if (m_portTransp_V2.insert(port).second) {
 		IncreaseDataCnt(TRANSPV2_PORT);
+	}
+}
+
+template <typename T>
+void NetDataStat<T>::BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum) {
+	switch (numOfBytes) {
+	case 2: *uNum = (buf[0] << 8) | buf[1]; break;
+	case 4: *ulNum = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]; break;
+	case 6: *ullNum = (buf[0] << 40) | (buf[1] << 32) | (buf[2] << 24) | (buf[3] << 16) | (buf[4] << 8) | buf[5]; break;
+	default: std::cout << "\nWrong number of bytes!\n";
 	}
 }
 
