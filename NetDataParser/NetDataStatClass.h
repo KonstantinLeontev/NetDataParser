@@ -43,7 +43,7 @@ private:
 	T m_dataSet[11];
 	std::string m_fileName;
 
-	// Unique adresses and ports.
+	// Unique addresses and ports.
 	std::set<unsigned long> m_addressNet_V1;
 	std::set<unsigned long long> m_addressNet_V2;
 	std::set<unsigned> m_portTransp_V1;
@@ -82,7 +82,7 @@ void NetDataStat<T>::SetPortTranspV1(const char* p) {
 
 template <typename T>
 void NetDataStat<T>::SetPortTranspV2(const char* p) {
-	unsigned port;
+	unsigned port{};
 	BigEndConverter(2, p, &port, 0, 0);
 	if (m_portTransp_V2.insert(port).second) {
 		IncreaseDataCnt(TRANSPV2_PORT);
@@ -93,6 +93,12 @@ template <typename T>
 void NetDataStat<T>::BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum) {
 	switch (numOfBytes) {
 	case 2: *uNum = (buf[0] << 8) | buf[1]; break;
+	/*{
+		char* temp = (char*)&uNum;
+		temp[0] = buf[1];
+		temp[1] = buf[0];
+		break;
+	}*/
 	case 4: *ulNum = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]; break;
 	case 6: *ullNum = (buf[0] << 40) | (buf[1] << 32) | (buf[2] << 24) | (buf[3] << 16) | (buf[4] << 8) | buf[5]; break;
 	default: std::cout << "\nWrong number of bytes!\n";
@@ -120,8 +126,8 @@ void NetDataStat<T>::PrintToScreen() const {
 	}
 	std::cout << m_dataSet[i] << '\n';
 	}
-	/*std::cout << "\nFragments:\n";
-	for (auto& x : fragments) {
+	std::cout << "\nFragments:\n";
+	/*for (auto& x : fragments) {
 		std::cout << "Number: " << x.first << ", flag: " << x.second << '\n';
 	}*/
 	std::cout << '\n';

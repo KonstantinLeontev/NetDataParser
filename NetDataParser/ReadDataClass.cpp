@@ -7,6 +7,7 @@ void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned>
 	dataFile.seekg(m_pos);
 	// Read the checksum
 	dataFile.read((char*)&m_checkSumBuf, sizeof(char[2]));
+
 	// Set checksum member of the class.
 	stat.BigEndConverter(2, m_checkSumBuf, &m_checkSum, 0, 0);
 

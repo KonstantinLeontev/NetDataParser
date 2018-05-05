@@ -33,7 +33,7 @@ int main() {
 					// Read network header.
 					switch (buffer.GetNetVersion()) {
 						case 0x01: {
-							// Do Network V1 staff.
+							// Do Network V1 stuff.
 							// ** TASK 1: Increase number of packets by 1.
 							stat.IncreaseDataCnt(NETV1_P);
 							// Read Network V1 header.
@@ -45,7 +45,7 @@ int main() {
 							buffer.SetProtocol();
 						} break;
 						case 0x02: {
-							// Do Network V2 staff.					
+							// Do Network V2 stuff.					
 							// ** TASK 2: Increase number of packets by 1.
 							stat.IncreaseDataCnt(NETV2_P);
 							// Read Network V1 header.
