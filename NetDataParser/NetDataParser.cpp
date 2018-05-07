@@ -25,10 +25,16 @@ int main() {
 				buffer.SetFileSize(dataFile.tellg()); // Get the current position from the end.
 				dataFile.seekg(0, std::ios::beg); // Move stream position to beginnig.
 
+				// Test counter.
+				int testCnt{};
+
 				// Read the file.
-				while (buffer.GetPos() < buffer.GetFileSize()) {
+				while (dataFile) {
 					// Read the version of network.
 					buffer.SetNetVersion(dataFile);
+
+					// Test line.
+					std::cout << ++testCnt << " loop, pos = " << dataFile.tellg() << '\n';
 
 					// Read network header.
 					switch (buffer.GetNetVersion()) {
@@ -65,7 +71,7 @@ int main() {
 					}
 
 					// Read transport header.
-					if (buffer.GetPos() != buffer.GetFileSize()) {
+					if (buffer.GetPos() < buffer.GetFileSize()) {
 						// Check transport protocol.
 						switch (buffer.GetProtocol()) {
 							case 0x01: {
@@ -100,4 +106,6 @@ int main() {
 			run = false;
 		}
 	}
+
+	return 0;
 }

@@ -12,7 +12,7 @@ void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned>
 	stat.BigEndConverter(2, m_checkSumBuf, &m_checkSum, 0, 0);
 
 	// Check the size of the whole packet and checksum.
-	unsigned tempSum = (headerSize + m_dataSize) % 0xFFFF;
+	uint16_t tempSum = (headerSize + m_dataSize) % 0xFFFF;
 	if (m_checkSum != tempSum) {
 		// **TASK 7: CheckSum is wrong - increase corresponding field in the stat array.
 		stat.IncreaseDataCnt(value);
@@ -51,8 +51,8 @@ void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> 
 	// Set the fragment number.
 	stat.BigEndConverter(4, m_transpV2.fragmentNumber, 0, &m_fragNum, 0);
 	// Checking for packet flag.
-	unsigned bit1 = (m_transpV2.lf >> 1) & 1U;
-	unsigned bit0 = (m_transpV2.lf >> 0) & 1U;
+	uint8_t bit1 = (m_transpV2.lf >> 1) & 1U;
+	uint8_t bit0 = (m_transpV2.lf >> 0) & 1U;
 	// Add this numbers to the stat databse.
 	if (bit1) {
 		stat.SetFragments(m_fragNum, 'L');

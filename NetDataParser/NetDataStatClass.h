@@ -20,15 +20,15 @@ public:
 	void IncreaseDataCnt(const DATA &data) { m_dataSet[data]++; }
 
 	// Set only unique data elements.
-	void SetAddressNetV1(const char* adr);
-	void SetAddressNetV2(const char* adr);
-	void SetPortTranspV1(const char* p);
-	void SetPortTranspV2(const char* p);
+	void SetAddressNetV1(const unsigned char* adr);
+	void SetAddressNetV2(const unsigned char* adr);
+	void SetPortTranspV1(const unsigned char* p);
+	void SetPortTranspV2(const unsigned char* p);
 
-	void SetFragments(const unsigned long &num, const char &flag) { fragments.emplace(num, flag); }
+	void SetFragments(const uint32_t &num, const unsigned char &flag) { fragments.emplace(num, flag); }
 
-	// Convert bytes to unsigned, unsigned long and unsigned long long by choice.
-	void BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum);
+	// Convert bytes to unsigned, uint32_t and uint64_t by choice.
+	void BigEndConverter(const int &numOfBytes, const unsigned char* buf, uint16_t* uNum, uint32_t* ulNum, uint64_t* ullNum);
 
 	// Get the number of unique elements.
 	T GetAddressNetV1Quant() const { return m_addressNet_V1.size(); }
@@ -44,18 +44,18 @@ private:
 	std::string m_fileName;
 
 	// Unique addresses and ports.
-	std::set<unsigned long> m_addressNet_V1;
-	std::set<unsigned long long> m_addressNet_V2;
-	std::set<unsigned> m_portTransp_V1;
-	std::set<unsigned> m_portTransp_V2;
+	std::set<uint32_t> m_addressNet_V1;
+	std::set<uint64_t> m_addressNet_V2;
+	std::set<uint16_t> m_portTransp_V1;
+	std::set<uint16_t> m_portTransp_V2;
 
 	// Fragments numbers.
-	std::map<unsigned long, char> fragments;
+	std::map<uint32_t, unsigned char> fragments;
 };
 
 template <typename T>
-void NetDataStat<T>::SetAddressNetV1(const char* adr) {
-	unsigned long address{};
+void NetDataStat<T>::SetAddressNetV1(const unsigned char* adr) {
+	uint32_t address{};
 	BigEndConverter(4, adr, 0, &address, 0);
 	if (m_addressNet_V1.insert(address).second) {
 		IncreaseDataCnt(NETV1_A);
@@ -63,8 +63,8 @@ void NetDataStat<T>::SetAddressNetV1(const char* adr) {
 }
 
 template <typename T>
-void NetDataStat<T>::SetAddressNetV2(const char* adr) {
-	unsigned long long address{};
+void NetDataStat<T>::SetAddressNetV2(const unsigned char* adr) {
+	uint64_t address{};
 	BigEndConverter(6, adr, 0, 0, &address);
 	if (m_addressNet_V2.insert(address).second) {
 		IncreaseDataCnt(NETV2_A);
@@ -72,8 +72,8 @@ void NetDataStat<T>::SetAddressNetV2(const char* adr) {
 }
 
 template <typename T>
-void NetDataStat<T>::SetPortTranspV1(const char* p) {
-	unsigned port{};
+void NetDataStat<T>::SetPortTranspV1(const unsigned char* p) {
+	uint16_t port{};
 	BigEndConverter(2, p, &port, 0, 0);
 	if (m_portTransp_V1.insert(port).second) {
 		IncreaseDataCnt(TRANSPV1_PORT);
@@ -81,8 +81,8 @@ void NetDataStat<T>::SetPortTranspV1(const char* p) {
 }
 
 template <typename T>
-void NetDataStat<T>::SetPortTranspV2(const char* p) {
-	unsigned port{};
+void NetDataStat<T>::SetPortTranspV2(const unsigned char* p) {
+	uint16_t port{};
 	BigEndConverter(2, p, &port, 0, 0);
 	if (m_portTransp_V2.insert(port).second) {
 		IncreaseDataCnt(TRANSPV2_PORT);
@@ -90,15 +90,13 @@ void NetDataStat<T>::SetPortTranspV2(const char* p) {
 }
 
 template <typename T>
-void NetDataStat<T>::BigEndConverter(const int &numOfBytes, const char* buf, unsigned* uNum, unsigned long* ulNum, unsigned long long* ullNum) {
+void NetDataStat<T>::BigEndConverter(const int &numOfBytes, const unsigned char* buf, uint16_t* uNum, uint32_t* ulNum, uint64_t * ullNum) {
 	switch (numOfBytes) {
-	case 2: *uNum = (buf[0] << 8) | buf[1]; break;
-	/*{
-		char* temp = (char*)&uNum;
-		temp[0] = buf[1];
-		temp[1] = buf[0];
+	case 2: {
+		*uNum = buf[0];
+		*uNum = (*uNum << 8) | buf[1];
 		break;
-	}*/
+	}
 	case 4: *ulNum = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]; break;
 	case 6: *ullNum = (buf[0] << 40) | (buf[1] << 32) | (buf[2] << 24) | (buf[3] << 16) | (buf[4] << 8) | buf[5]; break;
 	default: std::cout << "\nWrong number of bytes!\n";
