@@ -18,26 +18,26 @@ public:
 	void SetPos(const unsigned &pos) { m_pos = pos; }
 	void SetFileSize(const unsigned &size) { m_fileSize = size; }
 
-	unsigned char GetNetVersion() const { return m_netVersion; }
-	unsigned char GetProtocol() const { return m_protocol; }
+	uint8_t GetNetVersion() const { return m_netVersion; }
+	uint8_t GetProtocol() const { return m_protocol; }
 	unsigned GetPos() const { return m_pos; }
 	unsigned GetFileSize() const { return m_fileSize; }
 	uint16_t GetCheckSum() const { return m_checkSum; }
 
-	void CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const int &headerSize, const DATA value);
+	void CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const unsigned short &headerSize, const DATA value);
 
 	// Buffers for reading headers from file.
 	Network_V1 m_netV1;
 	Network_V2 m_netV2;
 	Transport_V1 m_transpV1;
 	Transport_V2 m_transpV2;
-	unsigned char m_checkSumBuf[2];
+	uint8_t m_checkSumBuf[2];
 
 private:
 
-	unsigned char m_netVersion;
-	unsigned char m_protocol;
-	unsigned long m_pos; // Current reading position.
+	uint8_t m_netVersion;
+	uint8_t m_protocol;
+	unsigned m_pos; // Current reading position.
 	unsigned m_fileSize;
 	uint16_t m_dataSize; // A size of the data in the packet.
 	uint16_t m_checkSum;

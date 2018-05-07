@@ -1,6 +1,6 @@
 #include "ReadDataClass.h"
 
-void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const int &headerSize, const DATA value) {
+void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const unsigned short &headerSize, const DATA value) {
 	// Jump to the checksum field and read the checksum.
 	m_pos = dataFile.tellg();
 	m_pos += m_dataSize;
@@ -12,7 +12,7 @@ void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned>
 	stat.BigEndConverter(2, m_checkSumBuf, &m_checkSum, 0, 0);
 
 	// Check the size of the whole packet and checksum.
-	uint16_t tempSum = (headerSize + m_dataSize) % 0xFFFF;
+	uint16_t tempSum = (headerSize + m_dataSize) ^ 0xFFFF;
 	if (m_checkSum != tempSum) {
 		// **TASK 7: CheckSum is wrong - increase corresponding field in the stat array.
 		stat.IncreaseDataCnt(value);
