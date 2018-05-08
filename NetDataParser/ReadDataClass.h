@@ -24,7 +24,7 @@ public:
 	unsigned GetFileSize() const { return m_fileSize; }
 	uint16_t GetCheckSum() const { return m_checkSum; }
 
-	void CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const unsigned short &headerSize, const DATA value);
+	void CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const DATA value);
 
 	// Buffers for reading headers from file.
 	Network_V1 m_netV1;

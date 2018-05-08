@@ -34,7 +34,7 @@ int main() {
 					buffer.SetNetVersion(dataFile);
 
 					// Test line.
-					std::cout << ++testCnt << " loop, pos = " << dataFile.tellg() << '\n';
+					std::cout << ++testCnt << " packet, pos = " << dataFile.tellg() << '\n';
 
 					// Read network header.
 					switch (buffer.GetNetVersion()) {

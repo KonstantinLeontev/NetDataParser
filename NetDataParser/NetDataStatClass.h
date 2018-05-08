@@ -4,7 +4,19 @@
 #include <set>
 #include <map>
 
-enum DATA { NETV1_P, NETV2_P, NETV1_A, NETV2_A, TRANSPV1_PACK, TRANSPV2_PACK, TRANSPV1_W, TRANSPV2_W, TRANSPV1_PORT, TRANSPV2_PORT, TRANSPV2_S };
+enum DATA {
+	NETV1_P, // Task 1: NETWORK V1 packets.
+	NETV2_P, // Task 2: NETWORK V2 packets.
+	NETV1_A, // Task 3: NETWORK V1 addresses.
+	NETV2_A, // Task 4: NETWORK V2 addresses.
+	TRANSPV1_PACK, // Task 5: TRANSPORT V1 packets.
+	TRANSPV2_PACK, // Task 6: TRANSPORT V2 packets.
+	TRANSPV1_W, // Task 7: TRANSPORT V1 packets with wrong checksum.
+	TRANSPV2_W, // Task 8: TRANSPORT V2 packets with wrong checksum.
+	TRANSPV1_PORT, // Task 9: TRANSPORT V1 ports.
+	TRANSPV2_PORT, // Task 10: TRANSPORT V2 ports.
+	TRANSPV2_S // Task 11: TRANSPORT V2 sessions.
+};
 
 template <typename T>
 class NetDataStat {
