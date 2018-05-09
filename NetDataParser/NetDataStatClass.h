@@ -3,6 +3,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <algorithm>
 #include "Packet.h"
 
 enum DATA {
@@ -42,7 +43,7 @@ public:
 	// Adds packet to the session map.
 	void SetSession(const Transport_V2 &transp_V2, const unsigned short &netVersion);
 	// Set the general session's counter. 
-	void SetSessionCnt() { m_dataSet[TRANSPV2_S] = m_sessions.size(); }
+	void SetSessionCnt();
 
 	// Convert bytes to unsigned, uint32_t and uint64_t by choice.
 	void BigEndConverter(const int &numOfBytes, const uint8_t* buf, uint16_t* uNum, uint32_t* ulNum, uint64_t* ullNum);
@@ -106,6 +107,22 @@ void NetDataStat<T>::SetSession(const Transport_V2 &transp_V2, const unsigned sh
 
 	// Add packet's data to the session map.
 	m_sessions[m_packet].insert(m_fragment);
+}
+
+template<typename T>
+void NetDataStat<T>::SetSessionCnt() {
+	T temp = m_sessions.size();
+	for (auto it : m_sessions) {
+		if ((it.second.begin())->flag == 'F' && (--it.second.end())->flag == 'L') {
+			if (adjacent_find(it.second.begin(), it.second.end()) != it.second.end()) {
+				temp--;
+			}
+		}
+		else {
+			temp--;
+		}
+	}
+	m_dataSet[TRANSPV2_S] = temp;
 }
 
 template <typename T>

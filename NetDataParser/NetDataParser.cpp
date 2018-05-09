@@ -93,8 +93,8 @@ int main() {
 				// Set the session's counter.
 				stat.SetSessionCnt();
 
-				// Print the sessions data.
-				stat.PrintSessions();
+				// Print the sessions data for testing only.
+				// stat.PrintSessions();
 
 				// Print statistics to the screen.
 				stat.PrintToScreen();
