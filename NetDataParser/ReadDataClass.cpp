@@ -59,8 +59,7 @@ void ReadDataClass::ReadTranspV1(std::ifstream &dataFile, NetDataStat<unsigned> 
 	// **TASK 5: Increase the counter for TRANSPORT V1 packets.
 	stat.IncreaseDataCnt(TRANSPV1_PACK);
 	// **TASK 9: Add the ports to the set.
-	stat.SetPortTranspV1(m_transpV1.sourcePort);
-	stat.SetPortTranspV1(m_transpV1.destPort);
+	stat.SetPortTranspV1(m_transpV1.sourcePort, m_transpV1.destPort);
 
 	// Get the size of the data in the packet.
 	stat.BigEndConverter(2, m_transpV1.dataSize, &m_dataSize, 0, 0);

@@ -26,7 +26,7 @@ public:
 		m_V1_address{}, m_V2_address{}, m_V2_port{} {}
 	NetDataStat(const std::string &name) :
 		m_dataSet{}, m_fileName(name), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), m_packet(), m_fragment(),
-		m_V1_address{}, m_V2_address{}, m_V2_port{} {}
+		m_V1_address{}, m_V2_address{}, m_V1_port{}, m_V2_port{} {}
 	NetDataStat(const NetDataStat &other) {}
 	~NetDataStat() {}
 
@@ -36,7 +36,7 @@ public:
 	// Set only unique data elements.
 	void SetAddressNetV1(const uint8_t* addr_1, const uint8_t* addr_2);
 	void SetAddressNetV2(const uint8_t* addr_1, const uint8_t* addr_2);
-	void SetPortTranspV1(const uint8_t* p);
+	void SetPortTranspV1(const uint8_t* p1, const uint8_t* p2);
 	void SetPortTranspV2(const uint8_t* p1, const uint8_t* p2);
 
 	// Adds packet to the session map.
@@ -48,6 +48,7 @@ public:
 	void BigEndConverter(const int &numOfBytes, const uint8_t* buf, uint16_t* uNum, uint32_t* ulNum, uint64_t* ullNum);
 
 	void PrintToScreen() const;
+	void PrintSessions();
 
 private:
 	// All statistic's numbers stores here.
@@ -63,6 +64,7 @@ private:
 	// Addresses and port for session calculation.
 	uint32_t m_V1_address[2]; // [0] - source, [1] - destination.
 	uint64_t m_V2_address[2];
+	uint16_t m_V1_port[2];
 	uint16_t m_V2_port[2];
 
 	// Sessions.
@@ -93,10 +95,10 @@ void NetDataStat<T>::SetSession(const Transport_V2 &transp_V2, const unsigned sh
 	// Read fragment and flag from raw bytes.
 	BigEndConverter(4, transp_V2.fragmentNumber, 0, &m_fragment.fragment, 0);
 	if (transp_V2.lf & 2) {
-		m_fragment.flag = 'F';
+		m_fragment.flag = 'L';
 	}
 	else if (transp_V2.lf & 1) {
-		m_fragment.flag = 'L';
+		m_fragment.flag = 'F';
 	}
 	else {
 		m_fragment.flag = '-';
@@ -133,18 +135,22 @@ void NetDataStat<T>::SetAddressNetV2(const uint8_t* addr_1, const uint8_t* addr_
 }
 
 template <typename T>
-void NetDataStat<T>::SetPortTranspV1(const uint8_t* p) {
-	uint16_t port{};
-	BigEndConverter(2, p, &port, 0, 0);
-	if (m_portTransp_V1.insert(port).second) {
-		IncreaseDataCnt(TRANSPV1_PORT);
+void NetDataStat<T>::SetPortTranspV1(const uint8_t* p1, const uint8_t* p2) {
+	BigEndConverter(2, p1, &m_V1_port[0], 0, 0); // Source address.
+	BigEndConverter(2, p2, &m_V1_port[1], 0, 0); // Destination address.
+
+	// Check for unique address and increase the stat counter if it is so.
+	for (int i = 0; i < 2; i++) {
+		if (m_portTransp_V1.insert(m_V1_port[i]).second) {
+			IncreaseDataCnt(TRANSPV1_PORT);
+		}
 	}
 }
 
 template <typename T>
 void NetDataStat<T>::SetPortTranspV2(const uint8_t* p1, const uint8_t* p2) {
 	BigEndConverter(2, p1, &m_V2_port[0], 0, 0); // Source address.
-	BigEndConverter(2, p1, &m_V2_port[0], 0, 0); // Destination address.
+	BigEndConverter(2, p2, &m_V2_port[1], 0, 0); // Destination address.
 
 	// Check for unique address and increase the stat counter if it is so.
 	for (int i = 0; i < 2; i++) {
@@ -194,4 +200,24 @@ void NetDataStat<T>::PrintToScreen() const {
 		std::cout << "Number: " << x.first << ", flag: " << x.second << '\n';
 	}*/
 	std::cout << '\n';
+}
+
+template<typename T>
+void NetDataStat<T>::PrintSessions() {
+	unsigned i{1};
+
+	std::cout << "\n--- Sessions: ---\n\n";
+	// Iterate trough the sessions map.
+	for (std::map<Packet, std::set<Fragment> >::iterator itM = m_sessions.begin(); itM != m_sessions.end(); ++itM) {
+		std::cout << "Session " << i << ":\n" <<
+			"	source address " << itM->first.sourceAddress << '\n' <<
+			"	destination address " << itM->first.destAddress << '\n' <<
+			"	source port " << itM->first.sourcePort << '\n' <<
+			"	destination port " << itM->first.destPort << '\n' <<
+			"	Fragments:\n";
+		for (std::set<Fragment>::iterator itS = itM->second.begin(); itS != itM->second.end(); ++itS) {
+			std::cout << "		fragment: " << itS->fragment << ", flag: " << itS->flag << '\n';
+		}
+		i++;
+	}
 }

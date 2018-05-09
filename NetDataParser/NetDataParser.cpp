@@ -34,7 +34,7 @@ int main() {
 					buffer.SetNetVersion(dataFile);
 
 					// Test line.
-					std::cout << ++testCnt << " packet, pos = " << dataFile.tellg() << '\n';
+					// std::cout << ++testCnt << " packet, pos = " << dataFile.tellg() << '\n';
 
 					// Read network header.
 					switch (buffer.GetNetVersion()) {
@@ -92,6 +92,10 @@ int main() {
 
 				// Set the session's counter.
 				stat.SetSessionCnt();
+
+				// Print the sessions data.
+				stat.PrintSessions();
+
 				// Print statistics to the screen.
 				stat.PrintToScreen();
 				
