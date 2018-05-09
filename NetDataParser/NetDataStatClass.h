@@ -3,6 +3,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include "Packet.h"
 
 enum DATA {
 	NETV1_P, // Task 1: NETWORK V1 packets.
@@ -21,32 +22,30 @@ enum DATA {
 template <typename T>
 class NetDataStat {
 public:
-	NetDataStat() : m_dataSet{}, m_fileName(""), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), fragments() {}
-	NetDataStat(const std::string &name) : m_dataSet{}, m_fileName(name), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), fragments() {}
+	NetDataStat() : m_dataSet{}, m_fileName(""), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), m_packet(), m_fragment(),
+		m_V1_address{}, m_V2_address{}, m_V2_port{} {}
+	NetDataStat(const std::string &name) :
+		m_dataSet{}, m_fileName(name), m_addressNet_V1(), m_addressNet_V2(), m_portTransp_V1(), m_portTransp_V2(), m_packet(), m_fragment(),
+		m_V1_address{}, m_V2_address{}, m_V2_port{} {}
 	NetDataStat(const NetDataStat &other) {}
 	~NetDataStat() {}
 
-	// Set and get the number of data elements.
-	void SetDataCnt(const DATA &data, const T &value) { m_dataSet[data] = value; }
-	T GetDataCnt(const DATA &data) const { return m_dataSet[data]; }
+	// Increase the counter of data elements.
 	void IncreaseDataCnt(const DATA &data) { m_dataSet[data]++; }
 
 	// Set only unique data elements.
-	void SetAddressNetV1(const uint8_t* adr);
-	void SetAddressNetV2(const uint8_t* adr);
+	void SetAddressNetV1(const uint8_t* addr_1, const uint8_t* addr_2);
+	void SetAddressNetV2(const uint8_t* addr_1, const uint8_t* addr_2);
 	void SetPortTranspV1(const uint8_t* p);
-	void SetPortTranspV2(const uint8_t* p);
+	void SetPortTranspV2(const uint8_t* p1, const uint8_t* p2);
 
-	void SetFragments(const uint32_t &num, const uint8_t &flag) { fragments.emplace(num, flag); }
+	// Adds packet to the session map.
+	void SetSession(const Transport_V2 &transp_V2, const unsigned short &netVersion);
+	// Set the general session's counter. 
+	void SetSessionCnt() { m_dataSet[TRANSPV2_S] = m_sessions.size(); }
 
 	// Convert bytes to unsigned, uint32_t and uint64_t by choice.
 	void BigEndConverter(const int &numOfBytes, const uint8_t* buf, uint16_t* uNum, uint32_t* ulNum, uint64_t* ullNum);
-
-	// Get the number of unique elements.
-	T GetAddressNetV1Quant() const { return m_addressNet_V1.size(); }
-	T GetAddressNetV2Quant() const { return m_addressNet_V2.size(); }
-	T GetPortTranspV1() const { return m_portTransp_V1.size(); }
-	T GetPortTranspV2() const { return m_portTransp_V2.size(); }
 
 	void PrintToScreen() const;
 
@@ -61,25 +60,75 @@ private:
 	std::set<uint16_t> m_portTransp_V1;
 	std::set<uint16_t> m_portTransp_V2;
 
-	// Fragments numbers.
-	std::map<uint32_t, uint8_t> fragments;
+	// Addresses and port for session calculation.
+	uint32_t m_V1_address[2]; // [0] - source, [1] - destination.
+	uint64_t m_V2_address[2];
+	uint16_t m_V2_port[2];
+
+	// Sessions.
+	std::map<Packet, std::set<Fragment> > m_sessions;
+	Packet m_packet;
+	Fragment m_fragment;
 };
 
+template<typename T>
+void NetDataStat<T>::SetSession(const Transport_V2 &transp_V2, const unsigned short &netVersion) {
+	// Fill packet struct from stat object.
+	switch (netVersion) {
+		case 1: {
+			m_packet.sourceAddress = m_V1_address[0];
+			m_packet.destAddress = m_V1_address[1];
+			break;
+		}
+		case 2: {
+			m_packet.sourceAddress = m_V2_address[0];
+			m_packet.destAddress = m_V2_address[1];
+			break;
+		}
+		default: std::cout << "\nWrong net version value!\n\n";
+	}
+	m_packet.sourcePort = m_V2_port[0];
+	m_packet.destPort = m_V2_port[1];
+
+	// Read fragment and flag from raw bytes.
+	BigEndConverter(4, transp_V2.fragmentNumber, 0, &m_fragment.fragment, 0);
+	if (transp_V2.lf & 2) {
+		m_fragment.flag = 'F';
+	}
+	else if (transp_V2.lf & 1) {
+		m_fragment.flag = 'L';
+	}
+	else {
+		m_fragment.flag = '-';
+	}
+
+	// Add packet's data to the session map.
+	m_sessions[m_packet].insert(m_fragment);
+}
+
 template <typename T>
-void NetDataStat<T>::SetAddressNetV1(const uint8_t* adr) {
-	uint32_t address{};
-	BigEndConverter(4, adr, 0, &address, 0);
-	if (m_addressNet_V1.insert(address).second) {
-		IncreaseDataCnt(NETV1_A);
+void NetDataStat<T>::SetAddressNetV1(const uint8_t* addr_1, const uint8_t* addr_2) {
+	BigEndConverter(4, addr_1, 0, &m_V1_address[0], 0); // Source address.
+	BigEndConverter(4, addr_2, 0, &m_V1_address[1], 0); // Destination address.
+
+	// Check for unique address and increase the stat counter if it is so.
+	for (int i = 0; i < 2; i++) {
+		if (m_addressNet_V1.insert(m_V1_address[i]).second) {
+			IncreaseDataCnt(NETV1_A);
+		}
 	}
 }
 
 template <typename T>
-void NetDataStat<T>::SetAddressNetV2(const uint8_t* adr) {
-	uint64_t address{};
-	BigEndConverter(6, adr, 0, 0, &address);
-	if (m_addressNet_V2.insert(address).second) {
-		IncreaseDataCnt(NETV2_A);
+void NetDataStat<T>::SetAddressNetV2(const uint8_t* addr_1, const uint8_t* addr_2) {
+	BigEndConverter(6, addr_1, 0, 0, &m_V2_address[0]); // Source address.
+	BigEndConverter(6, addr_2, 0, 0, &m_V2_address[1]); // Destination address.
+
+	// Check for unique address and increase the stat counter if it is so.
+	for (int i = 0; i < 2; i++) {
+		if (m_addressNet_V2.insert(m_V2_address[i]).second) {
+			IncreaseDataCnt(NETV2_A);
+		}
 	}
 }
 
@@ -93,11 +142,15 @@ void NetDataStat<T>::SetPortTranspV1(const uint8_t* p) {
 }
 
 template <typename T>
-void NetDataStat<T>::SetPortTranspV2(const uint8_t* p) {
-	uint16_t port{};
-	BigEndConverter(2, p, &port, 0, 0);
-	if (m_portTransp_V2.insert(port).second) {
-		IncreaseDataCnt(TRANSPV2_PORT);
+void NetDataStat<T>::SetPortTranspV2(const uint8_t* p1, const uint8_t* p2) {
+	BigEndConverter(2, p1, &m_V2_port[0], 0, 0); // Source address.
+	BigEndConverter(2, p1, &m_V2_port[0], 0, 0); // Destination address.
+
+	// Check for unique address and increase the stat counter if it is so.
+	for (int i = 0; i < 2; i++) {
+		if (m_portTransp_V2.insert(m_V2_port[i]).second) {
+			IncreaseDataCnt(TRANSPV2_PORT);
+		}
 	}
 }
 
@@ -119,22 +172,22 @@ template <typename T>
 void NetDataStat<T>::PrintToScreen() const {
 	std::cout << "\nThe statistics of " << m_fileName << '\n' << '\n';
 	for (int i = 0; i < 11; i++) {
-	std::cout << i + 1 << ". ";
-	switch (i) {
-	case 0: std::cout << "NETWORK V1 packets: "; break;
-	case 1: std::cout << "NETWORK V2 packets: "; break;
-	case 2: std::cout << "NETWORK V1 unique addresses: "; break;
-	case 3: std::cout << "NETWORK V2 unique addresses: "; break;
-	case 4: std::cout << "TRANSPORT V1 packets: "; break;
-	case 5: std::cout << "TRANSPORT V2 packets: "; break;
-	case 6: std::cout << "TRANSPORT V1 packets with wrong control sum: "; break;
-	case 7: std::cout << "TRANSPORT V2 packets with wrong control sum: "; break;
-	case 8: std::cout << "TRANSPORT V1 unique ports: "; break;
-	case 9: std::cout << "TRANSPORT V2 unique ports: "; break;
-	case 10: std::cout << "TRANSPORT V2 sessions: "; break;
-	default: break;
-	}
-	std::cout << m_dataSet[i] << '\n';
+		std::cout << i + 1 << ". ";
+		switch (i) {
+			case 0: std::cout << "NETWORK V1 packets: "; break;
+			case 1: std::cout << "NETWORK V2 packets: "; break;
+			case 2: std::cout << "NETWORK V1 unique addresses: "; break;
+			case 3: std::cout << "NETWORK V2 unique addresses: "; break;
+			case 4: std::cout << "TRANSPORT V1 packets: "; break;
+			case 5: std::cout << "TRANSPORT V2 packets: "; break;
+			case 6: std::cout << "TRANSPORT V1 packets with wrong control sum: "; break;
+			case 7: std::cout << "TRANSPORT V2 packets with wrong control sum: "; break;
+			case 8: std::cout << "TRANSPORT V1 unique ports: "; break;
+			case 9: std::cout << "TRANSPORT V2 unique ports: "; break;
+			case 10: std::cout << "TRANSPORT V2 sessions: "; break;
+			default: break;
+		}
+		std::cout << m_dataSet[i] << '\n';
 	}
 	std::cout << "\nFragments:\n";
 	/*for (auto& x : fragments) {

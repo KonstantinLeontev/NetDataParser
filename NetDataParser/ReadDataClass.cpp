@@ -74,8 +74,7 @@ void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> 
 	// **TASK 6: Increase the counter for TRANSPORT V2 packets.
 	stat.IncreaseDataCnt(TRANSPV2_PACK);
 	// **TASK 10: Add the ports to the set.
-	stat.SetPortTranspV2(m_transpV2.sourcePort);
-	stat.SetPortTranspV2(m_transpV2.destPort);
+	stat.SetPortTranspV2(m_transpV2.sourcePort, m_transpV2.destPort);
 
 	// Get the size of the data in the packet.
 	stat.BigEndConverter(2, m_transpV2.dataSize, &m_dataSize, 0, 0);
@@ -83,21 +82,8 @@ void ReadDataClass::ReadTranspV2(std::ifstream &dataFile, NetDataStat<unsigned> 
 	// Check for wrong sum.
 	CheckWrongSum(dataFile, stat, TRANSPV2_W);
 
-	// Set the fragment number.
-	stat.BigEndConverter(4, m_transpV2.fragmentNumber, 0, &m_fragNum, 0);
-	// Checking for packet flag.
-	uint8_t bit1 = (m_transpV2.lf >> 1) & 1U;
-	uint8_t bit0 = (m_transpV2.lf >> 0) & 1U;
-	// Add this numbers to the stat databse.
-	if (bit1) {
-		stat.SetFragments(m_fragNum, 'L');
-	}
-	else if (bit0) {
-		stat.SetFragments(m_fragNum, 'F');
-	}
-	else {
-		stat.SetFragments(m_fragNum, '-');
-	}
+	// Set the session data.
+	stat.SetSession(m_transpV2, m_netVersion);
 }
 
 void ReadDataClass::SetProtocol() {

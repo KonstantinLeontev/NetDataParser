@@ -45,8 +45,7 @@ int main() {
 							// Read Network V1 header.
 							buffer.ReadNetV1(dataFile);
 							// **TASK 3: Add address to the stat object to be counted later.
-							stat.SetAddressNetV1(buffer.m_netV1.sourceAddress);
-							stat.SetAddressNetV1(buffer.m_netV1.destAddress);
+							stat.SetAddressNetV1(buffer.m_netV1.sourceAddress, buffer.m_netV1.destAddress);
 							// Set transport protocol.
 							buffer.SetProtocol();
 						} break;
@@ -57,8 +56,7 @@ int main() {
 							// Read Network V1 header.
 							buffer.ReadNetV2(dataFile);
 							// **TASK 3: Add address to the stat object to be counted later.
-							stat.SetAddressNetV2(buffer.m_netV2.sourceAddress);
-							stat.SetAddressNetV2(buffer.m_netV2.destAddress);
+							stat.SetAddressNetV2(buffer.m_netV2.sourceAddress, buffer.m_netV2.destAddress);
 							// Set transport protocol.
 							buffer.SetProtocol();
 						} break;
@@ -92,6 +90,8 @@ int main() {
 					}
 				}
 
+				// Set the session's counter.
+				stat.SetSessionCnt();
 				// Print statistics to the screen.
 				stat.PrintToScreen();
 				

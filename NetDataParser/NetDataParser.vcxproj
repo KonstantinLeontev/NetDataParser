@@ -122,6 +122,7 @@
     <ClInclude Include="NetDataStatClass.h" />
     <ClInclude Include="NetLevels.h" />
     <ClInclude Include="ReadDataClass.h" />
+    <ClInclude Include="Packet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
