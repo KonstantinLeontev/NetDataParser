@@ -34,8 +34,11 @@ int main() {
 					buffer.SetNetVersion(dataFile);
 
 					// Test line.
-					// std::cout << ++testCnt << " packet, pos = " << dataFile.tellg() << '\n';
-
+					testCnt++;
+					if (!(testCnt % 10000)) {
+						std::cout << testCnt << " packet, pos = " << dataFile.tellg() << '\n';
+					}
+					
 					// Read network header.
 					switch (buffer.GetNetVersion()) {
 						case 0x01: {

@@ -1,11 +1,6 @@
 #include "ReadDataClass.h"
 
 void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned> &stat, const DATA value) {
-	// Jump to the checksum field and read the checksum.
-	//m_pos = dataFile.tellg();
-	//m_pos += m_dataSize;
-	//dataFile.seekg(m_pos);
-	
 	// Check the size of the whole transport packet.
 	uint8_t tempData{};
 	uint16_t tempSum{};
@@ -51,6 +46,19 @@ void ReadDataClass::CheckWrongSum(std::ifstream &dataFile, NetDataStat<unsigned>
 	if (m_checkSum != tempSum) {
 		// **TASK 7: CheckSum is wrong - increase corresponding field in the stat array.
 		stat.IncreaseDataCnt(value);
+
+		// Offset back to the end of network header = checksum + transport header + transport data size.
+		int offset = 2 + size + m_dataSize;
+		// Calculate the right dataSize value from network header.
+		switch (m_netVersion) {
+			case 1: stat.BigEndConverter(2, m_netV1.dataSize, &m_dataSize, 0, 0); break;
+			case 2: stat.BigEndConverter(2, m_netV2.dataSize, &m_dataSize, 0, 0); break;
+			default: std::cout << "\nWrong network version value!\n\n";
+		}
+		// Decrease offset by the dataSize value from network header.
+		offset -= m_dataSize;
+		// Move cursor back to the right position.
+		dataFile.seekg(-offset, dataFile.cur);
 	}
 }
 

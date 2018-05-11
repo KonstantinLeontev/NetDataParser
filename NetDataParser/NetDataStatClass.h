@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <iomanip>
 #include "Packet.h"
 
 enum DATA {
@@ -195,30 +196,33 @@ template <typename T>
 void NetDataStat<T>::PrintToScreen() const {
 	std::cout << "\nThe statistics of " << m_fileName << '\n' << '\n';
 	for (int i = 0; i < 11; i++) {
-		std::cout << i + 1 << ". ";
+		std::cout << std::right << std::setfill('0') << std::setw(2) << i + 1 << ". ";
 		switch (i) {
-			case 0: std::cout << "NETWORK V1 packets: "; break;
-			case 1: std::cout << "NETWORK V2 packets: "; break;
-			case 2: std::cout << "NETWORK V1 unique addresses: "; break;
-			case 3: std::cout << "NETWORK V2 unique addresses: "; break;
-			case 4: std::cout << "TRANSPORT V1 packets: "; break;
-			case 5: std::cout << "TRANSPORT V2 packets: "; break;
-			case 6: std::cout << "TRANSPORT V1 packets with wrong control sum: "; break;
-			case 7: std::cout << "TRANSPORT V2 packets with wrong control sum: "; break;
-			case 8: std::cout << "TRANSPORT V1 unique ports: "; break;
-			case 9: std::cout << "TRANSPORT V2 unique ports: "; break;
-			case 10: std::cout << "TRANSPORT V2 sessions: "; break;
+			case 0: std::cout << std::setfill(' ') << std::setw(50) << std::left << "NETWORK V1 packets: "; break;
+			case 1: std::cout << std::setfill(' ') << std::setw(50) << std::left << "NETWORK V2 packets: "; break;
+			case 2: std::cout << std::setfill(' ') << std::setw(50) << std::left << "NETWORK V1 unique addresses: "; break;
+			case 3: std::cout << std::setfill(' ') << std::setw(50) << std::left << "NETWORK V2 unique addresses: "; break;
+			case 4: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V1 packets: "; break;
+			case 5: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V2 packets: "; break;
+			case 6: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V1 packets with wrong control sum: "; break;
+			case 7: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V2 packets with wrong control sum: "; break;
+			case 8: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V1 unique ports: "; break;
+			case 9: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V2 unique ports: "; break;
+			case 10: std::cout << std::setfill(' ') << std::setw(50) << std::left << "TRANSPORT V2 sessions: "; break;
 			default: break;
 		}
-		std::cout << m_dataSet[i] << '\n';
+		std::cout << std::setw(16) << m_dataSet[i] << '\n';
 	}
-	std::cout << "\nFragments:\n";
-	/*for (auto& x : fragments) {
-		std::cout << "Number: " << x.first << ", flag: " << x.second << '\n';
-	}*/
 	std::cout << '\n';
+
+	/*std::cout << "\nFragments:\n";
+	for (auto& x : fragments) {
+		std::cout << "Number: " << x.first << ", flag: " << x.second << '\n';
+	}
+	std::cout << '\n';*/
 }
 
+// Testing method for sessions checking.
 template<typename T>
 void NetDataStat<T>::PrintSessions() {
 	unsigned i{1};
