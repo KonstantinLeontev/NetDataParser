@@ -17,3 +17,6 @@
 
 # reinclude .gitignore
 !.gitignore
+
+# reinclude raw samples for testing
+!*.raw
