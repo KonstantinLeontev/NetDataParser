@@ -20,3 +20,6 @@
 
 # reinclude raw samples for testing
 !*.raw
+
+# reinclude PDF description
+!*.pdf
